@@ -102,6 +102,7 @@ namespace Presentation.Controllers
         /// </summary>
         [Authorize]
         [HttpPost("{id}/publish")]
+        [HttpPatch("{id}/publish")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -127,6 +128,7 @@ namespace Presentation.Controllers
         /// </summary>
         [Authorize]
         [HttpPost("{id}/unpublish")]
+        [HttpPatch("{id}/unpublish")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UnpublishCourse(Guid id)
