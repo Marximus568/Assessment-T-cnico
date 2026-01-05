@@ -29,6 +29,18 @@ namespace Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
+        // Factory method for creating lessons
+        public static Lesson Create(Guid courseId, string title, int order)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                throw new ArgumentException("Lesson title cannot be empty", nameof(title));
+
+            if (order < 1)
+                throw new ArgumentException("Lesson order must be greater than 0", nameof(order));
+
+            return new Lesson(courseId, title, order);
+        }
+
         // Behavior
         public void UpdateOrder(int newOrder)
         {

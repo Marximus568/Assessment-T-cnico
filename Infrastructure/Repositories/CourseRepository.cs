@@ -86,4 +86,32 @@ public class CourseRepository : ICourseRepository
         _context.Courses.Update(course);
         await _context.SaveChangesAsync();
     }
+
+    public async Task AddLessonAsync(Guid courseId, Lesson lesson)
+    {
+        if (lesson == null)
+            throw new ArgumentNullException(nameof(lesson));
+
+        // Verify course exists
+        var courseExists = await _context.Courses
+            .AnyAsync(c => c.Id == courseId);
+
+        if (!courseExists)
+            throw new KeyNotFoundException($"Course with ID {courseId} not found");
+
+        // Intelligent Reordering Logic: Shift subsequent lessons
+        var subsequentLessons = await _context.Lessons
+            .Where(l => l.CourseId == courseId && !l.IsDeleted && l.Order >= lesson.Order)
+            .OrderBy(l => l.Order)
+            .ToListAsync();
+
+        foreach (var subsequentLesson in subsequentLessons)
+        {
+            subsequentLesson.UpdateOrder(subsequentLesson.Order + 1);
+        }
+
+        // Add the new lesson (CourseId is already set in constructor)
+        await _context.Lessons.AddAsync(lesson);
+        await _context.SaveChangesAsync();
+    }
 }

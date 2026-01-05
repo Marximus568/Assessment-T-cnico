@@ -71,6 +71,33 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
+        /// Updates a course title.
+        /// </summary>
+        [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateCourse(Guid id, [FromBody] string title)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(title))
+                    return BadRequest(new { error = "Course title cannot be empty" });
+
+                await _courseService.UpdateCourseAsync(id, title);
+                return Ok(new { message = "Course updated successfully" });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { error = "Course not found" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Publishes a course (requires at least one active lesson).
         /// </summary>
         [Authorize]

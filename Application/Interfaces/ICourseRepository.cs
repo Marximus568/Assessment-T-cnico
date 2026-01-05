@@ -9,4 +9,5 @@ public interface ICourseRepository
     Task<(IEnumerable<Course> Items, int TotalCount)> SearchAsync(string q, string status, int page, int pageSize);
     Task AddAsync(Course course);
     Task UpdateAsync(Course course);
+    Task AddLessonAsync(Guid courseId, Lesson lesson);
 }

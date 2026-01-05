@@ -6,6 +6,7 @@ namespace Application.Interfaces;
 public interface ICourseService
 {
     Task<Guid> CreateCourseAsync(string title);
+    Task UpdateCourseAsync(Guid courseId, string title);
     Task PublishCourseAsync(Guid courseId);
     Task UnpublishCourseAsync(Guid courseId);
     Task<CourseSummaryDto> GetCourseSummaryAsync(Guid courseId);

@@ -24,28 +24,18 @@ public class LessonService : ILessonService
         if (order < 1)
             throw new ArgumentException("Lesson order must be greater than 0", nameof(order));
 
-        // Get course
+        // Get course to verify it exists
         var course = await _courseRepository.GetByIdAsync(courseId);
         if (course == null)
             throw new KeyNotFoundException($"Course with ID {courseId} not found");
 
-        // Add lesson (with automatic reordering)
-        try
-        {
-            course.AddLesson(title, order);
-            await _courseRepository.UpdateAsync(course);
+        // Create lesson using factory method
+        var lesson = Domain.Entities.Lesson.Create(courseId, title, order);
+        
+        // Use the repository method to add lesson directly (avoids concurrency issues)
+        await _courseRepository.AddLessonAsync(courseId, lesson);
 
-            // Return the newly created lesson ID
-            var lesson = course.Lessons.FirstOrDefault(l => l.Order == order && l.Title == title);
-            if (lesson == null)
-                throw new InvalidOperationException("Failed to create lesson");
-
-            return lesson.Id;
-        }
-        catch (InvalidOperationException ex)
-        {
-            throw new InvalidOperationException($"Failed to add lesson to course: {ex.Message}", ex);
-        }
+        return lesson.Id;
     }
 
     public async Task<LessonDto?> GetLessonAsync(Guid courseId, Guid lessonId)

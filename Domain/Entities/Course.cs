@@ -53,6 +53,15 @@ namespace Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
+        public void UpdateTitle(string newTitle)
+        {
+            if (string.IsNullOrWhiteSpace(newTitle))
+                throw new ArgumentException("Course title cannot be empty", nameof(newTitle));
+
+            Title = newTitle;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
         public void AddLesson(string title, int order)
         {
             // Intelligent Reordering Logic: Shift subsequent lessons

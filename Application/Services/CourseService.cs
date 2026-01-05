@@ -19,9 +19,25 @@ public class CourseService : ICourseService
 
     public async Task<Guid> CreateCourseAsync(string title)
     {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Course title cannot be empty", nameof(title));
+
         var course = new Course(title);
         await _courseRepository.AddAsync(course);
         return course.Id;
+    }
+
+    public async Task UpdateCourseAsync(Guid courseId, string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Course title cannot be empty", nameof(title));
+
+        var course = await _courseRepository.GetByIdAsync(courseId);
+        if (course == null) throw new KeyNotFoundException("Course not found");
+
+        // Update the title through a method (good practice for domain logic)
+        course.UpdateTitle(title);
+        await _courseRepository.UpdateAsync(course);
     }
 
     public async Task PublishCourseAsync(Guid courseId)
