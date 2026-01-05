@@ -17,31 +17,58 @@ public class LessonService : ILessonService
 
     public async Task<Guid> AddLessonAsync(Guid courseId, string title, int order)
     {
+        // Validation
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Lesson title cannot be empty", nameof(title));
+
+        if (order < 1)
+            throw new ArgumentException("Lesson order must be greater than 0", nameof(order));
+
+        // Get course
         var course = await _courseRepository.GetByIdAsync(courseId);
-        if (course == null) throw new KeyNotFoundException("Course not found");
+        if (course == null)
+            throw new KeyNotFoundException($"Course with ID {courseId} not found");
 
-        course.AddLesson(title, order);
-        await _courseRepository.UpdateAsync(course);
+        // Add lesson (with automatic reordering)
+        try
+        {
+            course.AddLesson(title, order);
+            await _courseRepository.UpdateAsync(course);
 
-        var lesson = course.Lessons.First(l => l.Order == order && l.Title == title);
-        return lesson.Id;
+            // Return the newly created lesson ID
+            var lesson = course.Lessons.FirstOrDefault(l => l.Order == order && l.Title == title);
+            if (lesson == null)
+                throw new InvalidOperationException("Failed to create lesson");
+
+            return lesson.Id;
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new InvalidOperationException($"Failed to add lesson to course: {ex.Message}", ex);
+        }
     }
 
     public async Task<LessonDto?> GetLessonAsync(Guid courseId, Guid lessonId)
     {
         var course = await _courseRepository.GetByIdAsync(courseId);
-        if (course == null) throw new KeyNotFoundException("Course not found");
+        if (course == null)
+            throw new KeyNotFoundException($"Course with ID {courseId} not found");
 
         var lesson = course.Lessons.FirstOrDefault(l => l.Id == lessonId);
-        if (lesson == null) return null;
-
-        return _mapper.Map<LessonDto>(lesson);
+        return lesson == null ? null : _mapper.Map<LessonDto>(lesson);
     }
 
     public async Task<PagedResult<LessonDto>> GetLessonsByCourseIdAsync(Guid courseId, int page, int pageSize)
     {
+        if (page < 1)
+            throw new ArgumentException("Page must be greater than 0", nameof(page));
+
+        if (pageSize < 1)
+            throw new ArgumentException("PageSize must be greater than 0", nameof(pageSize));
+
         var course = await _courseRepository.GetByIdAsync(courseId);
-        if (course == null) throw new KeyNotFoundException("Course not found");
+        if (course == null)
+            throw new KeyNotFoundException($"Course with ID {courseId} not found");
 
         var lessons = course.Lessons
             .OrderBy(l => l.Order)
@@ -55,20 +82,37 @@ public class LessonService : ILessonService
 
     public async Task ReorderLessonAsync(Guid courseId, Guid lessonId, int newOrder)
     {
-        var course = await _courseRepository.GetByIdAsync(courseId);
-        if (course == null) throw new KeyNotFoundException("Course not found");
+        if (newOrder < 1)
+            throw new ArgumentException("New order must be greater than 0", nameof(newOrder));
 
-        course.ReorderLesson(lessonId, newOrder);
-        await _courseRepository.UpdateAsync(course);
+        var course = await _courseRepository.GetByIdAsync(courseId);
+        if (course == null)
+            throw new KeyNotFoundException($"Course with ID {courseId} not found");
+
+        try
+        {
+            course.ReorderLesson(lessonId, newOrder);
+            await _courseRepository.UpdateAsync(course);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            throw new KeyNotFoundException($"Lesson with ID {lessonId} not found in course", ex);
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new InvalidOperationException($"Cannot reorder lesson: {ex.Message}", ex);
+        }
     }
 
     public async Task SoftDeleteLessonAsync(Guid courseId, Guid lessonId)
     {
         var course = await _courseRepository.GetByIdAsync(courseId);
-        if (course == null) throw new KeyNotFoundException("Course not found");
+        if (course == null)
+            throw new KeyNotFoundException($"Course with ID {courseId} not found");
 
         var lesson = course.Lessons.FirstOrDefault(l => l.Id == lessonId);
-        if (lesson == null) throw new KeyNotFoundException("Lesson not found");
+        if (lesson == null)
+            throw new KeyNotFoundException($"Lesson with ID {lessonId} not found in course");
 
         lesson.SoftDelete();
         await _courseRepository.UpdateAsync(course);
