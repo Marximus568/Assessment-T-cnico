@@ -2,7 +2,14 @@ using Infrastructure;
 using Application;
 using Microsoft.OpenApi.Models;
 
+// Load environment variables from .env (traverse up to find it)
+DotNetEnv.Env.TraversePath().Load();
+
 var builder = WebApplication.CreateBuilder(args);
+
+
+// Ensure environment variables are loaded into Configuration
+builder.Configuration.AddEnvironmentVariables();
 
 // --------------------------------------------------
 // Add services
@@ -34,8 +41,18 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-    var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not configured");
+    var secretKey = builder.Configuration["JwtSettings:Secret"] 
+                    ?? builder.Configuration["JWTSETTINGS__SECRET"]
+                    ?? Environment.GetEnvironmentVariable("JWTSETTINGS__SECRET")
+                    ?? throw new InvalidOperationException("JWT Secret not configured. Ensure JWTSETTINGS__SECRET is set in .env");
+    
+    var issuer = builder.Configuration["JwtSettings:Issuer"] 
+                 ?? builder.Configuration["JWTSETTINGS__ISSUER"]
+                 ?? Environment.GetEnvironmentVariable("JWTSETTINGS__ISSUER");
+
+    var audience = builder.Configuration["JwtSettings:Audience"] 
+                   ?? builder.Configuration["JWTSETTINGS__AUDIENCE"]
+                   ?? Environment.GetEnvironmentVariable("JWTSETTINGS__AUDIENCE");
     
     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
     {
@@ -43,8 +60,8 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
+        ValidIssuer = issuer,
+        ValidAudience = audience,
         IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
             System.Text.Encoding.UTF8.GetBytes(secretKey))
     };

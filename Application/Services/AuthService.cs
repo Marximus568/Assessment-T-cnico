@@ -60,12 +60,28 @@ public class AuthService : IAuthService
 
     private async Task<AuthResponseDto> GenerateTokenAsync(ApplicationUser user)
     {
-        var jwtSettings = _configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not configured");
+        var secretKey = _configuration["JwtSettings:Secret"] 
+                        ?? _configuration["JWTSETTINGS__SECRET"]
+                        ?? Environment.GetEnvironmentVariable("JWTSETTINGS__SECRET")
+                        ?? throw new InvalidOperationException("JWT Secret not configured. Ensure JWTSETTINGS__SECRET is set in .env");
+        
+        var issuer = _configuration["JwtSettings:Issuer"] 
+                     ?? _configuration["JWTSETTINGS__ISSUER"]
+                     ?? Environment.GetEnvironmentVariable("JWTSETTINGS__ISSUER");
+
+        var audience = _configuration["JwtSettings:Audience"] 
+                       ?? _configuration["JWTSETTINGS__AUDIENCE"]
+                       ?? Environment.GetEnvironmentVariable("JWTSETTINGS__AUDIENCE");
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var expirationMinutes = int.Parse(jwtSettings["ExpirationMinutes"] ?? "60");
+        var expirationMinutesStr = _configuration["JwtSettings:ExpirationMinutes"] 
+                                  ?? _configuration["JWTSETTINGS__EXPIRATIONMINUTES"]
+                                  ?? Environment.GetEnvironmentVariable("JWTSETTINGS__EXPIRATIONMINUTES")
+                                  ?? "60";
+        
+        var expirationMinutes = int.Parse(expirationMinutesStr);
         var expiresAt = DateTime.UtcNow.AddMinutes(expirationMinutes);
 
         var claims = new List<Claim>
@@ -80,8 +96,8 @@ public class AuthService : IAuthService
             claims.Add(new Claim(ClaimTypes.Name, user.FullName));
 
         var token = new JwtSecurityToken(
-            issuer: jwtSettings["Issuer"],
-            audience: jwtSettings["Audience"],
+            issuer: issuer,
+            audience: audience,
             claims: claims,
             expires: expiresAt,
             signingCredentials: credentials
