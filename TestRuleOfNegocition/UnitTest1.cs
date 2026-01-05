@@ -70,23 +70,25 @@ public class CourseAndLessonBusinessRulesTests
     }
 
     /// <summary>
-    /// Business Rule: A lesson cannot have a duplicate order within the same course
-    /// Expected behavior: Should throw InvalidOperationException when trying to add a lesson with existing order
+    /// Business Rule: Adding a lesson with an existing order should shift subsequent lessons.
     /// </summary>
     [Fact]
-    public void CreateLesson_WithDuplicateOrder_ShouldFail()
+    public void CreateLesson_WithDuplicateOrder_ShouldReorder()
     {
         // Arrange
         var course = new Course("JavaScript Essentials");
         course.AddLesson("Getting Started", 1);
         
-        // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => 
-            course.AddLesson("Another lesson", 1));
+        // Act
+        course.AddLesson("Prerequisites", 1);
         
-        Assert.NotNull(exception);
-        Assert.Equal("A lesson with order 1 already exists in this course.", exception.Message);
-        Assert.Single(course.Lessons);
+        // Assert
+        Assert.Equal(2, course.Lessons.Count);
+        var lessons = course.Lessons.OrderBy(l => l.Order).ToList();
+        Assert.Equal("Prerequisites", lessons[0].Title);
+        Assert.Equal(1, lessons[0].Order);
+        Assert.Equal("Getting Started", lessons[1].Title);
+        Assert.Equal(2, lessons[1].Order);
     }
 
     // ==================== SOFT DELETE TESTS ====================
@@ -195,24 +197,37 @@ public class CourseAndLessonBusinessRulesTests
     }
 
     /// <summary>
-    /// Business Rule: Reordering a lesson to a duplicate order should fail
+    /// Business Rule: Reordering a lesson to an occupied order should shift other lessons.
     /// </summary>
     [Fact]
-    public void ReorderLesson_ToDuplicateOrder_ShouldFail()
+    public void ReorderLesson_ToDuplicateOrder_ShouldReorder()
     {
         // Arrange
         var course = new Course("Software Architecture");
+        course.AddLesson("Design Patterns", 1); // Becomes 2 after SOLID added
+        course.AddLesson("SOLID Principles", 2); // Becomes 3 after Clean Code added
+        course.AddLesson("Clean Code", 3);
+        
+        // At this point: DP=1, SOLID=2, CC=3 (Wait, no, AddLesson shifts)
+        // Let's re-arrange the Arrange for clarity:
+        course = new Course("Software Architecture");
         course.AddLesson("Design Patterns", 1);
         course.AddLesson("SOLID Principles", 2);
+        course.AddLesson("Clean Code", 3);
         
-        var firstLesson = course.Lessons.First(l => l.Order == 1);
+        var cleanCodeLine = course.Lessons.First(l => l.Title == "Clean Code");
         
-        // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => 
-            course.ReorderLesson(firstLesson.Id, 2));
+        // Act
+        course.ReorderLesson(cleanCodeLine.Id, 1);
         
-        Assert.NotNull(exception);
-        Assert.Contains("Another lesson already has the order 2", exception.Message);
+        // Assert
+        var lessons = course.Lessons.OrderBy(l => l.Order).ToList();
+        Assert.Equal("Clean Code", lessons[0].Title);
+        Assert.Equal(1, lessons[0].Order);
+        Assert.Equal("Design Patterns", lessons[1].Title);
+        Assert.Equal(2, lessons[1].Order);
+        Assert.Equal("SOLID Principles", lessons[2].Title);
+        Assert.Equal(3, lessons[2].Order);
     }
 
     /// <summary>

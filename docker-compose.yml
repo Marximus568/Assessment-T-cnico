@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # ASP.NET Core API Service (Only API, no database)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: assessment-api
+    restart: unless-stopped
+    ports:
+      - "5129:5129"
+    environment:
+      # Database Configuration (REQUIRED - Must be set in .env)
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      
+      # JWT Configuration (REQUIRED - Must be set in .env)
+      JWTSETTINGS__SECRET: ${JWTSETTINGS__SECRET}
+      JWTSETTINGS__ISSUER: ${JWTSETTINGS__ISSUER}
+      JWTSETTINGS__AUDIENCE: ${JWTSETTINGS__AUDIENCE}
+      JWTSETTINGS__EXPIRATIONMINUTES: ${JWTSETTINGS__EXPIRATIONMINUTES}
+      
+      # ASP.NET Core Configuration
+      ASPNETCORE_URLS: http://+:5129
+      ASPNETCORE_ENVIRONMENT: Production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5129/api/v1/course"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+

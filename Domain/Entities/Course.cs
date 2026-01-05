@@ -55,8 +55,16 @@ namespace Domain.Entities
 
         public void AddLesson(string title, int order)
         {
-            if (_lessons.Any(l => !l.IsDeleted && l.Order == order))
-                throw new InvalidOperationException($"A lesson with order {order} already exists in this course.");
+            // Intelligent Reordering Logic: Shift subsequent lessons
+            var subsequentLessons = _lessons
+                .Where(l => !l.IsDeleted && l.Order >= order)
+                .OrderBy(l => l.Order)
+                .ToList();
+
+            foreach (var subsequentLesson in subsequentLessons)
+            {
+                subsequentLesson.UpdateOrder(subsequentLesson.Order + 1);
+            }
 
             var lesson = new Lesson(Id, title, order);
             _lessons.Add(lesson);
@@ -69,8 +77,26 @@ namespace Domain.Entities
             if (lesson == null)
                 throw new KeyNotFoundException("Lesson not found or deleted.");
 
-            if (_lessons.Any(l => l.Id != lessonId && !l.IsDeleted && l.Order == newOrder))
-                throw new InvalidOperationException($"Another lesson already has the order {newOrder}.");
+            if (lesson.Order == newOrder)
+                return;
+
+            // Intelligent Reordering Logic: Shift other lessons
+            if (newOrder < lesson.Order)
+            {
+                // Moving up: Increment lessons between newOrder and current lesson.Order-1
+                var affected = _lessons
+                    .Where(l => !l.IsDeleted && l.Id != lessonId && l.Order >= newOrder && l.Order < lesson.Order)
+                    .ToList();
+                foreach (var l in affected) l.UpdateOrder(l.Order + 1);
+            }
+            else
+            {
+                // Moving down: Decrement lessons between current lesson.Order+1 and newOrder
+                var affected = _lessons
+                    .Where(l => !l.IsDeleted && l.Id != lessonId && l.Order > lesson.Order && l.Order <= newOrder)
+                    .ToList();
+                foreach (var l in affected) l.UpdateOrder(l.Order - 1);
+            }
 
             lesson.UpdateOrder(newOrder);
             UpdatedAt = DateTime.UtcNow;

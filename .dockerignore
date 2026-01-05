@@ -1,0 +1,57 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.user
+*.suo
+.vs/
+
+# Build Output
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+
+# NuGet
+.nuget/
+packages/
+*.nupkg
+*.snupkg
+
+# Test Results
+TestResults/
+*.trx
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Application specific
+logs/
+*.log
+node_modules/
+
+# Docker
+docker-compose.override.yml
+
+# Temp files
+*.tmp
+*.temp
+

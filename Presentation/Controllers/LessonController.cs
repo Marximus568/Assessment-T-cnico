@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers
 {
-    [Route("api/v1/Course/{courseId}/[controller]")]
+    [Route("api/v1/courses/{courseId}/[controller]s")]
     [ApiController]
     public class LessonController : ControllerBase
     {
@@ -35,6 +35,26 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
+        /// Gets a specific lesson.
+        /// </summary>
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(LessonDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<LessonDto>> GetLesson(Guid courseId, Guid id)
+        {
+            try
+            {
+                var lesson = await _lessonService.GetLessonAsync(courseId, id);
+                if (lesson == null) return NotFound();
+                return Ok(lesson);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        /// <summary>
         /// Adds a new lesson to a course.
         /// </summary>
         [HttpPost]
@@ -46,7 +66,7 @@ namespace Presentation.Controllers
             try
             {
                 var lessonId = await _lessonService.AddLessonAsync(courseId, input.Title, input.Order);
-                return CreatedAtAction(nameof(AddLesson), new { courseId, id = lessonId }, new { id = lessonId });
+                return CreatedAtAction(nameof(GetLesson), new { courseId, id = lessonId }, new { id = lessonId });
             }
             catch (KeyNotFoundException)
             {

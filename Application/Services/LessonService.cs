@@ -27,6 +27,17 @@ public class LessonService : ILessonService
         return lesson.Id;
     }
 
+    public async Task<LessonDto?> GetLessonAsync(Guid courseId, Guid lessonId)
+    {
+        var course = await _courseRepository.GetByIdAsync(courseId);
+        if (course == null) throw new KeyNotFoundException("Course not found");
+
+        var lesson = course.Lessons.FirstOrDefault(l => l.Id == lessonId);
+        if (lesson == null) return null;
+
+        return _mapper.Map<LessonDto>(lesson);
+    }
+
     public async Task<PagedResult<LessonDto>> GetLessonsByCourseIdAsync(Guid courseId, int page, int pageSize)
     {
         var course = await _courseRepository.GetByIdAsync(courseId);
