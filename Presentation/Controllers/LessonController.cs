@@ -16,7 +16,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Lista las lecciones de un curso con paginación.
+        /// Lists the lessons of a course with pagination.
         /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResult<LessonDto>), StatusCodes.Status200OK)]
@@ -35,7 +35,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Agrega una nueva lección a un curso.
+        /// Adds a new lesson to a course.
         /// </summary>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -59,7 +59,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Cambia el orden de una lección dentro del curso.
+        /// Changes the order of a lesson within the course.
         /// </summary>
         [HttpPut("{lessonId}/reorder")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -83,7 +83,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Elimina lógicamente una lección.
+        /// Soft deletes a lesson.
         /// </summary>
         [HttpDelete("{lessonId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

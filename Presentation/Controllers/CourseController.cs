@@ -18,7 +18,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Obtiene una lista paginada de todos los cursos.
+        /// Gets a paginated list of all courses.
         /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResult<CourseDto>), StatusCodes.Status200OK)]
@@ -29,7 +29,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Busca cursos con filtros y paginación.
+        /// Searches for courses with filters and pagination.
         /// </summary>
         [Authorize]
         [HttpGet("search")]
@@ -45,7 +45,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Obtiene un curso por su ID.
+        /// Gets a course by its ID.
         /// </summary>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(CourseDto), StatusCodes.Status200OK)]
@@ -60,7 +60,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Crea un nuevo curso en estado borrador.
+        /// Creates a new course in draft status.
         /// </summary>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -71,7 +71,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Publica un curso (requiere al menos una lección activa).
+        /// Publishes a course (requires at least one active lesson).
         /// </summary>
         [Authorize]
         [HttpPost("{id}/publish")]
@@ -96,7 +96,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Revierte un curso a estado borrador.
+        /// Reverts a course to draft status.
         /// </summary>
         [Authorize]
         [HttpPost("{id}/unpublish")]
@@ -116,7 +116,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Obtiene un resumen del curso con estadísticas.
+        /// Gets a course summary with statistics.
         /// </summary>
         [Authorize]
         [HttpGet("{id}/summary")]
@@ -136,7 +136,7 @@ namespace Presentation.Controllers
         }
 
         /// <summary>
-        /// Elimina lógicamente un curso.
+        /// Soft deletes a course.
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

@@ -16,7 +16,7 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Registra un nuevo usuario en el sistema.
+    /// Registers a new user in the system.
     /// </summary>
     [HttpPost("register")]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
@@ -35,7 +35,7 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Autentica un usuario y retorna un token JWT.
+    /// Authenticates a user and returns a JWT token.
     /// </summary>
     [HttpPost("login")]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]

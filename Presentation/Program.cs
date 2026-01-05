@@ -60,7 +60,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Courses API",
         Version = "v1",
-        Description = "Módulo de cursos para el sistema de gestión educativa con soporte para Identity y JWT."
+        Description = "Courses management module for the educational system with Identity and JWT support."
     });
 
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
