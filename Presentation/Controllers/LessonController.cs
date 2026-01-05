@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers
@@ -14,7 +15,32 @@ namespace Presentation.Controllers
             _lessonService = lessonService;
         }
 
+        /// <summary>
+        /// Lista las lecciones de un curso con paginación.
+        /// </summary>
+        [HttpGet]
+        [ProducesResponseType(typeof(PagedResult<LessonDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagedResult<LessonDto>>> GetLessons(Guid courseId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var lessons = await _lessonService.GetLessonsByCourseIdAsync(courseId, page, pageSize);
+                return Ok(lessons);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        /// <summary>
+        /// Agrega una nueva lección a un curso.
+        /// </summary>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> AddLesson(Guid courseId, [FromBody] LessonInputDto input)
         {
             try
@@ -32,7 +58,13 @@ namespace Presentation.Controllers
             }
         }
 
+        /// <summary>
+        /// Cambia el orden de una lección dentro del curso.
+        /// </summary>
         [HttpPut("{lessonId}/reorder")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ReorderLesson(Guid courseId, Guid lessonId, [FromBody] int newOrder)
         {
             try
@@ -50,7 +82,12 @@ namespace Presentation.Controllers
             }
         }
 
+        /// <summary>
+        /// Elimina lógicamente una lección.
+        /// </summary>
         [HttpDelete("{lessonId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteLesson(Guid courseId, Guid lessonId)
         {
             try

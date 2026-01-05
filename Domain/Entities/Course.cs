@@ -44,6 +44,15 @@ namespace Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
+        public void Unpublish()
+        {
+            if (Status == CourseStatus.Draft)
+                return;
+
+            Status = CourseStatus.Draft;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
         public void AddLesson(string title, int order)
         {
             if (_lessons.Any(l => !l.IsDeleted && l.Order == order))

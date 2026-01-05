@@ -1,14 +1,18 @@
+using Application.DTOs;
 using Application.Interfaces;
+using AutoMapper;
 
 namespace Application.Services;
 
 public class LessonService : ILessonService
 {
     private readonly ICourseRepository _courseRepository;
+    private readonly IMapper _mapper;
 
-    public LessonService(ICourseRepository courseRepository)
+    public LessonService(ICourseRepository courseRepository, IMapper mapper)
     {
         _courseRepository = courseRepository;
+        _mapper = mapper;
     }
 
     public async Task<Guid> AddLessonAsync(Guid courseId, string title, int order)
@@ -21,6 +25,21 @@ public class LessonService : ILessonService
 
         var lesson = course.Lessons.First(l => l.Order == order && l.Title == title);
         return lesson.Id;
+    }
+
+    public async Task<PagedResult<LessonDto>> GetLessonsByCourseIdAsync(Guid courseId, int page, int pageSize)
+    {
+        var course = await _courseRepository.GetByIdAsync(courseId);
+        if (course == null) throw new KeyNotFoundException("Course not found");
+
+        var lessons = course.Lessons
+            .OrderBy(l => l.Order)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var dtos = _mapper.Map<IEnumerable<LessonDto>>(lessons);
+        return new PagedResult<LessonDto>(dtos, course.Lessons.Count, page, pageSize);
     }
 
     public async Task ReorderLessonAsync(Guid courseId, Guid lessonId, int newOrder)
