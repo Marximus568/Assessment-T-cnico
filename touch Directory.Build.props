@@ -1,0 +1,11 @@
+<Project>
+    <PropertyGroup>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all" />
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.*" PrivateAssets="all" />
+    </ItemGroup>
+</Project>
