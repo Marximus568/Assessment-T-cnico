@@ -2,7 +2,7 @@ using Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Persistence.Config;
+namespace Infrastructure.Persistence;
 
 public class AuthDbContext : IdentityDbContext<ApplicationUser>
 {
@@ -13,8 +13,5 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // Configure Identity tables to use a specific schema if needed
-        // modelBuilder.HasDefaultSchema("auth");
     }
 }
